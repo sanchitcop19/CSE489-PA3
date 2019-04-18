@@ -33,6 +33,8 @@
 #include "../include/control_header_lib.h"
 #include "../include/author.h"
 #include "../include/init.h"
+#include "../include/routing_table.h"
+
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
     #define CNTRL_PAYLOAD_LEN_OFFSET 0x06
@@ -193,6 +195,8 @@ bool control_recv_hook(int sock_index)
 
         case 1: init_response(sock_index, cntrl_payload);
                 break;
+	case 2: routing_table(sock_index);
+		break;
 	/*
             .........
            ....... 

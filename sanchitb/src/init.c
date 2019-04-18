@@ -28,18 +28,15 @@
 #include "../include/network_util.h"
 #include "../include/map.h"
 
-int num_routers = 0;
-typedef map_t(unsigned int) uint_map_t;
+int num_routers = 5;
 typedef struct{
 	uint16_t id;
 	uint16_t port1;
 	uint16_t port2;
 	uint16_t cost;
 	uint32_t ip;
+	uint16_t next_hop;
 } router;
-void convert_payload(){
-
-}
 void generate_response(int sock_index){
 	uint16_t payload_len, response_len;
 	char* cntrl_response_header;
@@ -54,17 +51,13 @@ void generate_response(int sock_index){
 void build_adj_list(router* routers[]){
 
 /*converts the data structure formed form convert_payload (list of info) to adjacency list*/
-	uint_map_t weight_map;
-	uint_map_t ip_map;
-	uint_map_t port_router_map;
-	uint_map_t port_data_map;
 	char buf[2];
 
 	map_init(&weight_map);
 	map_init(&ip_map);	
 	map_init(&port_router_map);	
 	map_init(&port_data_map);	
-
+	map_init(&next_hop);
 	for (int i = 0; i < num_routers; ++i){
 
 		memset(buf, '\0', sizeof buf);
@@ -77,9 +70,11 @@ void build_adj_list(router* routers[]){
 		map_set(&port_router_map, buf, routers[i]->port1);
 		
 		map_set(&port_data_map, buf, routers[i]->port2);
+
+		map_set(&next_hop, buf, routers[i]->next_hop);
 	}
 	const char *key;
-map_iter_t iter = map_iter(&m);
+map_iter_t iter = map_iter(&weight_map);
 
 while ((key = map_next(&weight_map, &iter))) {
   printf("%s -> %u\n", key, *map_get(&weight_map, key));
@@ -91,7 +86,6 @@ void init_response(int sock_index, char* cntrl_payload){
 printf("initializing based off of: %s\n", cntrl_payload);	
 //Assuming self to be euston
 //Save routers at the id'th position in the array
-num_routers = 5;
 uint16_t interval = 3;
 uint16_t id1 = 1;
 uint16_t port11 = 3452;
@@ -104,6 +98,7 @@ router1->port1 = port11;
 router1->port2 = port12;
 router1->cost = cost1;
 router1->ip = ip1;
+router1->next_hop = id1;
 
 uint16_t id2 = 2;
 uint16_t port21 = 4562;
@@ -116,6 +111,7 @@ router2->port1 = port21;
 router2->port2 = port22;
 router2->cost = cost2;
 router2->ip = ip2;
+router2->next_hop = id2;
 
 uint16_t id3 = 3;
 uint16_t port31 = 8356;
@@ -128,6 +124,7 @@ router3->port1 = port31;
 router3->port2 = port32;
 router3->cost = cost3;
 router3->ip = ip3;
+router3->next_hop = USHRT_MAX;
 
 uint16_t id4 = 4;
 uint16_t port41 = 4573;
@@ -140,6 +137,7 @@ router4->port1 = port41;
 router4->port2 = port42;
 router4->cost = cost4;
 router4->ip = ip4;
+router4->next_hop = id4;
 
 uint16_t id5 = 5;
 uint16_t port51 = 3456;
@@ -152,6 +150,10 @@ router5->port1 = port51;
 router5->port2 = port52;
 router5->cost = cost5;
 router5->ip = ip5;
+router5->next_hop = USHRT_MAX;
+
+
+
 router* routers[5] = {
 	router1,
 	router2,
