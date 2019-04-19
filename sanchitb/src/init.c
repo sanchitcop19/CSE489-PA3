@@ -29,14 +29,7 @@
 #include "../include/map.h"
 
 int num_routers = 5;
-typedef struct{
-	uint16_t id;
-	uint16_t port1;
-	uint16_t port2;
-	uint16_t cost;
-	uint32_t ip;
-	uint16_t next_hop;
-} router;
+
 void generate_response(int sock_index){
 	uint16_t payload_len, response_len;
 	char* cntrl_response_header;
@@ -74,12 +67,11 @@ void build_adj_list(router* routers[]){
 		map_set(&next_hop, buf, routers[i]->next_hop);
 	}
 	const char *key;
-map_iter_t iter = map_iter(&weight_map);
+        map_iter_t iter = map_iter(&weight_map);
 
-while ((key = map_next(&weight_map, &iter))) {
-  printf("%s -> %u\n", key, *map_get(&weight_map, key));
-}
-
+        while ((key = map_next(&weight_map, &iter))) {
+                printf("%s -> %d\n", key, *map_get(&weight_map, key));
+        }
 } 
 
 void init_response(int sock_index, char* cntrl_payload){

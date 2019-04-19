@@ -34,6 +34,7 @@
 #include "../include/author.h"
 #include "../include/init.h"
 #include "../include/routing_table.h"
+#include "../include/update.h"
 
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
@@ -184,8 +185,8 @@ bool control_recv_hook(int sock_index)
 	FILE* file = fopen("payload.txt", "w");
 	fprintf(file, "%u", (unsigned char)*cntrl_payload);
 	fclose(file);
-	printf("cntrl_payload: %s\n", cntrl_payload);
-	
+	//printf("cntrl_payload: %.*s\n", payload_len, cntrl_payload);
+	printf("character: %c\n", *cntrl_payload);	
     }
 
     /* Triage on control_code */
@@ -197,6 +198,10 @@ bool control_recv_hook(int sock_index)
                 break;
 	case 2: routing_table(sock_index);
 		break;
+	case 3: update(sock_index, cntrl_payload);
+		break;
+	case 4: crash(sock_index);
+		exit(0);
 	/*
             .........
            ....... 
