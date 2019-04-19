@@ -6,7 +6,6 @@
 #include <inttypes.h>
 #include "map.h"
 typedef enum {FALSE, TRUE} bool;
-
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
 
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */
@@ -27,5 +26,11 @@ typedef struct{
         uint32_t ip;
         uint16_t next_hop;
 } router;
+
+typedef struct{
+	long x, y;
+}pair;
+
+pair get_info(int, char*, int, int, int);
 
 #endif

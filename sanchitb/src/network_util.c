@@ -35,6 +35,7 @@ ssize_t recvALL(int sock_index, char *buffer, ssize_t nbytes)
     while(bytes != nbytes)
         bytes += recv(sock_index, buffer+bytes, nbytes-bytes, 0);
 	printf("bufferlength: %i\n", strlen(buffer));
+	printf("buffer: %u\n", (unsigned char)buffer);
     return bytes;
 }
 

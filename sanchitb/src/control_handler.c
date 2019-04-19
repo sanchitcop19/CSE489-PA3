@@ -35,28 +35,12 @@
 #include "../include/init.h"
 #include "../include/routing_table.h"
 #include "../include/update.h"
+#include "../include/crash.h"
 
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
     #define CNTRL_PAYLOAD_LEN_OFFSET 0x06
 #endif
-/*https://www.geeksforgeeks.org/binary-representation-of-a-given-number*/
-void bin(unsigned n) 
-{ 
-    unsigned i; 
-    for (i = 1 << 31; i > 0; i = i / 2) 
-        (n & i)? printf("1"): printf("0"); 
-} 
-/* https://stackoverflow.com/questions/18327439/printing-binary-representation-of-a-char-in-c */
-void print_byte(char* byt){
-
-char a = *byt;
-  int i;
-  for (i = 0; i < 94; i++) {
-      printf("%d", !!((a << i) & 0x80));
-  }
-  printf("\n");
-}
 /* Linked List for active control connections */
 struct ControlConn
 {
@@ -173,8 +157,6 @@ bool control_recv_hook(int sock_index)
     /* Get control payload */
     if(payload_len != 0){
         cntrl_payload = (char *) malloc(sizeof(char)*payload_len);
-	printf("sizeof payload: ", sizeof(cntrl_payload));
-	printf("\n");
 	bzero(cntrl_payload, payload_len);
 
         if(recvALL(sock_index, cntrl_payload, payload_len) < 0){
@@ -182,8 +164,12 @@ bool control_recv_hook(int sock_index)
             free(cntrl_payload);
             return FALSE;
         }
-	FILE* file = fopen("payload.txt", "w");
-	fprintf(file, "%u", (unsigned char)*cntrl_payload);
+	char* end;
+	//unsigned long int payl = strtol(cntrl_payload, &end, 2);
+	//binprintf(16, payl);
+	//printf("%lu", payl);
+	FILE* file = fopen("payload.txt", "wb");
+	fprintf(file, "%s", cntrl_payload);
 	fclose(file);
 	//printf("cntrl_payload: %.*s\n", payload_len, cntrl_payload);
 	printf("character: %c\n", *cntrl_payload);	
@@ -194,7 +180,7 @@ bool control_recv_hook(int sock_index)
         case 0: author_response(sock_index);
                 break;
 
-        case 1: init_response(sock_index, cntrl_payload);
+        case 1: init_response(sock_index, cntrl_payload, payload_len);
                 break;
 	case 2: routing_table(sock_index);
 		break;

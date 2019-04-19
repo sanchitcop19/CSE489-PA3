@@ -74,8 +74,7 @@ void build_adj_list(router* routers[]){
         }
 } 
 
-void init_response(int sock_index, char* cntrl_payload){
-printf("initializing based off of: %s\n", cntrl_payload);	
+void init_response(int sock_index, char* cntrl_payload, int payload_len){
 //Assuming self to be euston
 //Save routers at the id'th position in the array
 uint16_t interval = 3;
@@ -155,4 +154,14 @@ router* routers[5] = {
 };
 build_adj_list(routers);
 generate_response(sock_index);
+pair info = get_info(16, cntrl_payload, 0, 1, payload_len);
+int num_r = info.x;
+int update = info.y;
+char* iter = cntrl_payload + 4;
+for (int i = 0; i < num_r; ++i, iter += 12){
+	char* id = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
+	printf("id of router %i: %s\n", i, id);
+	char* port1 = strcat(char2bits(iter[i+2]), char2bits(iter[i+3]));
+	printf("port1 of router %i: %s\n", i, port1);
+}
 };
