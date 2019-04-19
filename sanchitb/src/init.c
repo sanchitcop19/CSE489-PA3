@@ -158,10 +158,35 @@ pair info = get_info(16, cntrl_payload, 0, 1, payload_len);
 int num_r = info.x;
 int update = info.y;
 char* iter = cntrl_payload + 4;
-for (int i = 0; i < num_r; ++i, iter += 12){
-	char* id = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
-	printf("id of router %i: %s\n", i, id);
-	char* port1 = strcat(char2bits(iter[i+2]), char2bits(iter[i+3]));
-	printf("port1 of router %i: %s\n", i, port1);
+
+for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
+
+	char* id_b = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
+	unsigned long id = strtol(id_b, NULL, 2);
+	printf("id of router %i: %u\n", i, id);
+			
+	char* port1_b = strcat(char2bits(iter[i+2]), char2bits(iter[i+3]));
+	unsigned long port1 = strtol(port1_b, NULL, 2);
+	printf("port1 of router %i: %u\n", i, port1);
+	
+	char* port2_b = strcat(char2bits(iter[i+4]), char2bits(iter[i+5]));
+	unsigned long port2 = strtol(port2_b, NULL, 2);
+	printf("port2 of router %i: %u\n", i, port2);
+
+	char* cost_b = strcat(char2bits(iter[i+6]), char2bits(iter[i+7]));
+	unsigned long cost = strtol(cost_b, NULL, 2);
+	printf("cost of router %i: %u\n", i, cost);
+
+	char* ip_b = strcat(char2bits(iter[i+8]), char2bits(iter[i+9]));
+	char* tmp = strcat(char2bits(iter[i+10]), char2bits(iter[i+11]));
+	ip_b = strcat(ip_b, tmp);
+	printf("ip of router %i in binary: %s\n", i, ip_b);
+	unsigned long ip = strtol(ip_b, NULL, 2);
+	printf("ip of router %i: %u\n", i, ip);
+	routers[i]->id = id;
+	routers[i]->port1 = port1;
+	routers[i]->port2 = port2;
+	routers[i]->cost = cost;
+	routers[i]->ip = ip;
 }
 };
