@@ -83,7 +83,9 @@ num_routers = num_r;
 router* routers[num_r];
 int update = info.y;
 char* iter = cntrl_payload + 4;
-
+initialize_neighbors(num_r);
+int temp = 0;
+printf("------------------------------------------------\n");
 for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 
 	char* id_b = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
@@ -115,9 +117,18 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	routers[c]->port2 = port2;
 	routers[c]->cost = cost;
 	routers[c]->ip = ip;
+	printf("neighbors: ");
 	if (cost == USHRT_MAX)routers[c]->next_hop = USHRT_MAX;
-	else routers[c]->next_hop = id; 
+	else {
+		neighbors[temp] = id;		
+		printf("%u ", id);
+		temp++;
+		routers[c]->next_hop = id; 
+	}
+	printf("\n");
+printf("------------------------------------------------\n");
 }
+get_ip();
 build_adj_list(routers);
 generate_response(sock_index);
 };

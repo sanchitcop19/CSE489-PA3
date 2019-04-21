@@ -26,6 +26,11 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include<string.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "../include/global.h"
+
 ssize_t recvALL(int sock_index, char *buffer, ssize_t nbytes)
 {
     ssize_t bytes = 0;
@@ -50,3 +55,39 @@ ssize_t sendALL(int sock_index, char *buffer, ssize_t nbytes)
 
     return bytes;
 }
+
+char* ip_from_long(unsigned long ip){
+	struct in_addr address = {ntohl(ip)};
+	char* result = inet_ntoa(address);
+	printf(" receiver ip: %s\n", result);
+	return result;
+}
+
+void get_ip(){
+        int dummy_socket;
+        struct sockaddr_in addr;
+        struct addrinfo hints, *res;
+        memset(&hints, 0, sizeof hints);
+        hints.ai_family = AF_INET;
+        hints.ai_socktype = SOCK_DGRAM;
+        int len = sizeof addr;
+        getaddrinfo("www.beej.us", "80", &hints, &res);
+
+        dummy_socket = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
+         if (connect(dummy_socket, res->ai_addr, res->ai_addrlen) < 0){
+                perror("connect failed\n");
+        }
+
+         if (getsockname(dummy_socket,(struct sockaddr*) &addr,(socklen_t*)(&len))  < 0){
+                perror("getsockname failed\n");
+        }
+
+        if (inet_ntop(AF_INET, &(addr.sin_addr), ip, sizeof ip) == NULL){
+                perror("inettnop returned null\n");
+        }
+        printf("IP:%s\n", ip);
+
+
+}
+

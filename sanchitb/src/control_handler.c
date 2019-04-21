@@ -36,6 +36,7 @@
 #include "../include/routing_table.h"
 #include "../include/update.h"
 #include "../include/crash.h"
+#include "../include/send_file.h"
 
 #ifndef PACKET_USING_STRUCT
     #define CNTRL_CONTROL_CODE_OFFSET 0x04
@@ -79,7 +80,17 @@ int create_control_sock()
 
     return sock;
 }
+int new_data_conn(int sock_index){
+    int fdaccept, caddr_len;
+    struct sockaddr_in sender;
 
+    caddr_len = sizeof(sender);
+    fdaccept = accept(sock_index, (struct sockaddr *)&sender, &caddr_len);
+    if(fdaccept < 0)
+        ERROR("accept() failed");
+
+    return fdaccept;
+}
 int new_control_conn(int sock_index)
 {
     int fdaccept, caddr_len;
@@ -164,15 +175,6 @@ bool control_recv_hook(int sock_index)
             free(cntrl_payload);
             return FALSE;
         }
-	char* end;
-	//unsigned long int payl = strtol(cntrl_payload, &end, 2);
-	//binprintf(16, payl);
-	//printf("%lu", payl);
-	FILE* file = fopen("payload.txt", "wb");
-	fprintf(file, "%s", cntrl_payload);
-	fclose(file);
-	//printf("cntrl_payload: %.*s\n", payload_len, cntrl_payload);
-	printf("character: %c\n", *cntrl_payload);	
     }
 
     /* Triage on control_code */
@@ -188,6 +190,8 @@ bool control_recv_hook(int sock_index)
 		break;
 	case 4: crash(sock_index);
 		exit(0);
+	case 5: send_file(sock_index, cntrl_payload);
+		break;
 	/*
             .........
            ....... 

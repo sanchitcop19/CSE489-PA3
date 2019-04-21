@@ -10,13 +10,14 @@ typedef enum {FALSE, TRUE} bool;
 
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)])) // Interesting stuff to read if you are interested to know how this works
-
+unsigned long neighbors[5];
 uint16_t CONTROL_PORT;
 uint_map_t weight_map;
 uint_map_t ip_map;
 uint_map_t port_router_map;
 uint_map_t port_data_map;
 uint_map_t next_hop;
+char ip[16];
 
 typedef struct{
         uint16_t id;
@@ -27,10 +28,20 @@ typedef struct{
         uint16_t next_hop;
 } router;
 
+typedef struct {
+	char ip[16];
+	uint8_t ttl;
+	uint8_t transfer_id;
+	uint16_t sequence_num;
+	char* filename;
+	
+} receiver;
+
 typedef struct{
 	long x, y;
 }pair;
 
 pair get_info(int, char*, int, int, int);
-
+receiver get_sendfile_info(char*);
+char* char2bits(char*);
 #endif

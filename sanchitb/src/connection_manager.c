@@ -63,7 +63,9 @@ void main_loop()
 
                 /* data_socket */
                 else if(sock_index == data_socket){
-                    //new_data_conn(sock_index);
+                    fdaccept = new_data_conn(sock_index);
+                    FD_SET(fdaccept, &master_list);
+                    if(fdaccept > head_fd) head_fd = fdaccept;
                 }
 
                 /* Existing connection */

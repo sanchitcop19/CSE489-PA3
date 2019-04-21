@@ -36,8 +36,8 @@ int main(int argc, char **argv)
 {
     /*Start Here*/
 
-    sscanf(argv[1], "%u", &CONTROL_PORT);
+    sscanf(argv[1], "%" SCNu16, &CONTROL_PORT);
     init(); // Initialize connection manager; This will block
 
     return 0;
-}
+

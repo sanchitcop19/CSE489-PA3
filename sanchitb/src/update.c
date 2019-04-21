@@ -5,8 +5,6 @@
 
 void update(int sock_index, char* payload){
 	/*parse router id and cost from payload*/	
-	uint16_t cost = 2;
-	uint16_t id = 2;	
 	uint16_t payload_len, response_len;
 	payload_len = 0;	
 	char* header;
@@ -14,6 +12,9 @@ void update(int sock_index, char* payload){
 	response_len = CNTRL_RESP_HEADER_SIZE + payload_len;
 	sendALL(sock_index, header, response_len);
 	free(header);
+	pair result = get_info(16, payload, 0, 3, 0);
+	unsigned long id = result.x;
+	unsigned long cost = result.y;
 	char buf[2];memset(buf, '\0', sizeof buf);
 	sprintf(buf, "%u", id);
 	map_set(&weight_map, buf, cost);
