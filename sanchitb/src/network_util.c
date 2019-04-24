@@ -86,6 +86,8 @@ void get_ip(){
         if (inet_ntop(AF_INET, &(addr.sin_addr), ip, sizeof ip) == NULL){
                 perror("inettnop returned null\n");
         }
+	ip_l = ntohl(addr.sin_addr.s_addr);
+	printf("IP: %u\n", ntohl(addr.sin_addr.s_addr));
         printf("IP:%s\n", ip);
 
 

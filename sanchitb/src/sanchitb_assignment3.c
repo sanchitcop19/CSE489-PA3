@@ -40,4 +40,4 @@ int main(int argc, char **argv)
     init(); // Initialize connection manager; This will block
 
     return 0;
-
+}

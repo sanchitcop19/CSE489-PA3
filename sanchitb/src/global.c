@@ -6,6 +6,17 @@ void initialize_neighbors(int num_r){
         	neighbors[i] = NULL;
 	}
 }
+int num_digits(long n){
+    int count = 0;
+
+
+    while(n != 0)
+    {
+          n /= 10;
+                  ++count;
+                             }
+   return count;     
+}
 
 /*https://stackoverflow.com/questions/7863499/conversion-of-char-to-binary-in-c*/
 char* char2bits(char c)
@@ -59,6 +70,23 @@ pair get_info(int bits, char* cntrl_payload, int last, int control_code, int pay
 	if (control_code == 1)return get_init_info(bits, cntrl_payload, payload_len);
 	else if (control_code == 3)return get_update_info(cntrl_payload);
 }
+void print_map(uint_map_t map){
+	const char *key;
+        map_iter_t iter = map_iter(&map);
 
-
+        while ((key = map_next(&map, &iter))) {
+                printf("%s -> %d\n", key, *map_get(&map, key));
+        }
+}
+void print_dv(){
+	for (int i = 0; i < 5; ++i){
+		for (int j = 0; j < 5; ++j){
+			unsigned int cost = dv[i][j];
+			int digits = num_digits(dv[i][j]);
+			printf(" %i ", cost);
+			for (int temp = digits; temp < 5; ++temp)printf(" ");
+		}
+		printf("\n");
+	} 
+}
 

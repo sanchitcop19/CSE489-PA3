@@ -5,19 +5,28 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "map.h"
+#include "Queue.h"
 typedef enum {FALSE, TRUE} bool;
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
 
 /* https://scaryreasoner.wordpress.com/2009/02/28/checking-sizeof-at-compile-time/ */
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)])) // Interesting stuff to read if you are interested to know how this works
 unsigned long neighbors[5];
+uint16_t self_id;
+uint16_t router_port; 
+uint16_t data_port;
+
 uint16_t CONTROL_PORT;
 uint_map_t weight_map;
 uint_map_t ip_map;
 uint_map_t port_router_map;
 uint_map_t port_data_map;
 uint_map_t next_hop;
+uint_map_t index_map;
 char ip[16];
+unsigned long ip_l;
+int dv[5][5]; 
+Queue queue;
 
 typedef struct{
         uint16_t id;
@@ -43,5 +52,8 @@ typedef struct{
 
 pair get_info(int, char*, int, int, int);
 receiver get_sendfile_info(char*);
-char* char2bits(char*);
+char* char2bits(char);
+void initialize_neighbors(int);
+void print_dv();
+void print_map(uint_map_t);
 #endif

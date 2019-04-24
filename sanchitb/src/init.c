@@ -30,6 +30,33 @@
 
 int num_routers = 5;
 
+void initialize_dv(int num){
+	const char *key;
+	unsigned int i = 0;
+	for (int m = 0; m < 5; ++m){
+		for (int n = 0; n < 5; ++n){
+			dv[m][n] = USHRT_MAX;
+		}
+	}	
+	unsigned int row = USHRT_MAX;
+        map_iter_t iter = map_iter(&weight_map);
+        while ((key = map_next(&weight_map, &iter))) {
+		printf("Mapping id %s to index %i\n", key, i);
+		map_set(&index_map, key, i);
+		printf("weight for self == 0: %u\n", *map_get(&weight_map, key));
+		if (*map_get(&weight_map, key) == 0) row = i;	
+		i++;
+        }
+	iter = map_iter(&index_map);
+	print_map(weight_map);
+        while ((key = map_next(&index_map, &iter))) {
+		unsigned int index = *map_get(&index_map, key);
+		unsigned int cost = *map_get(&weight_map, key);
+		dv[row][index] = cost;
+	}
+	print_dv();
+}
+
 void generate_response(int sock_index){
 	uint16_t payload_len, response_len;
 	char* cntrl_response_header;
@@ -51,6 +78,8 @@ void build_adj_list(router* routers[]){
 	map_init(&port_router_map);	
 	map_init(&port_data_map);	
 	map_init(&next_hop);
+	map_init(&index_map);
+
 	for (int i = 0; i < num_routers; ++i){
 
 		memset(buf, '\0', sizeof buf);
@@ -86,6 +115,7 @@ char* iter = cntrl_payload + 4;
 initialize_neighbors(num_r);
 int temp = 0;
 printf("------------------------------------------------\n");
+get_ip();
 for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 
 	char* id_b = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
@@ -95,6 +125,7 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	char* port1_b = strcat(char2bits(iter[i+2]), char2bits(iter[i+3]));
 	unsigned long port1 = strtol(port1_b, NULL, 2);
 	printf("port1 of router %i: %u\n", c, port1);
+
 	
 	char* port2_b = strcat(char2bits(iter[i+4]), char2bits(iter[i+5]));
 	unsigned long port2 = strtol(port2_b, NULL, 2);
@@ -109,7 +140,10 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	ip_b = strcat(ip_b, tmp);
 	printf("ip of router %i in binary: %s\n", c, ip_b);
 	unsigned long ip = strtol(ip_b, NULL, 2);
+	if (ip == ip_l)self_id = id;
+	if (ip == ip_l){router_port = port1;data_port = port2;}
 	printf("ip of router %i: %u\n", c, ip);
+	printf("router port: %u, data port: %u\n", router_port, data_port);
 	router* _router = malloc(sizeof(router));
 	routers[c] = _router;
 	routers[c]->id = id;
@@ -128,7 +162,7 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	printf("\n");
 printf("------------------------------------------------\n");
 }
-get_ip();
 build_adj_list(routers);
+initialize_dv(num_r);
 generate_response(sock_index);
 };
