@@ -49,7 +49,28 @@ struct ControlConn
     LIST_ENTRY(ControlConn) next;
 }*connection, *conn_temp;
 LIST_HEAD(ControlConnsHead, ControlConn) control_conn_list;
+int create_router_sock(){
+	int sock;
+	struct sockaddr_in dummy;
+	socklen_t addrlen = sizeof(dummy);
 
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0)ERROR("socket() failed");
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (int[]){1}, sizeof(int)) < 0)
+        ERROR("setsockopt() failed");
+			
+    bzero(&dummy, sizeof(dummy));
+
+    dummy.sin_family = AF_INET;
+    dummy.sin_addr.s_addr = htonl(INADDR_ANY);
+    dummy.sin_port = htons(router_port);
+
+    if(bind(sock, (struct sockaddr *)&dummy, sizeof(dummy)) < 0)
+        ERROR("bind() failed");
+
+	router_socket = sock;
+	return sock;
+}
 int create_control_sock()
 {
     int sock;

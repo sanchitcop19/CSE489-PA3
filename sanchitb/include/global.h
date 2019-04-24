@@ -16,7 +16,11 @@ uint16_t self_id;
 uint16_t router_port; 
 uint16_t data_port;
 
+int router_socket, data_socket;
+
 uint16_t CONTROL_PORT;
+uint16_t DATA_PORT;
+uint16_t ROUTER_PORT;
 uint_map_t weight_map;
 uint_map_t ip_map;
 uint_map_t port_router_map;
@@ -27,6 +31,7 @@ char ip[16];
 unsigned long ip_l;
 int dv[5][5]; 
 Queue queue;
+int _numr;
 
 typedef struct{
         uint16_t id;
@@ -35,6 +40,7 @@ typedef struct{
         uint16_t cost;
         uint32_t ip;
         uint16_t next_hop;
+	short strike;
 } router;
 
 typedef struct {
@@ -45,7 +51,7 @@ typedef struct {
 	char* filename;
 	
 } receiver;
-
+router** routers;
 typedef struct{
 	long x, y;
 }pair;

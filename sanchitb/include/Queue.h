@@ -15,7 +15,7 @@ typedef struct QueueList
     node *tail;
 }Queue;
 
-void initq(Queue *q, size_t memSize);
+void qinit(Queue *q, size_t memSize);
 int push(Queue *, const void *);
 void pop(Queue *, void *);
 void peek(Queue *, void *);

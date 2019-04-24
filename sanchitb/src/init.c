@@ -27,6 +27,7 @@
 #include "../include/control_header_lib.h"
 #include "../include/network_util.h"
 #include "../include/map.h"
+#include "../include/control_handler.h"
 
 int num_routers = 5;
 
@@ -68,7 +69,7 @@ void generate_response(int sock_index){
 	sendALL(sock_index, cntrl_response_header, response_len);
 
 }
-void build_adj_list(router* routers[]){
+void build_adj_list(){
 
 /*converts the data structure formed form convert_payload (list of info) to adjacency list*/
 	char buf[2];
@@ -79,21 +80,21 @@ void build_adj_list(router* routers[]){
 	map_init(&port_data_map);	
 	map_init(&next_hop);
 	map_init(&index_map);
-
-	for (int i = 0; i < num_routers; ++i){
+	router** trav = routers;
+	for (int i = 0; i < num_routers; ++i, ++trav){
 
 		memset(buf, '\0', sizeof buf);
-		sprintf(buf, "%u", routers[i]->id);
+		sprintf(buf, "%u", (*trav)->id);
 
-		map_set(&weight_map, buf, routers[i]->cost);
+		map_set(&weight_map, buf, (*trav)->cost);
 		
-		map_set(&ip_map, buf, routers[i]->ip);
+		map_set(&ip_map, buf, (*trav)->ip);
 		
-		map_set(&port_router_map, buf, routers[i]->port1);
+		map_set(&port_router_map, buf, (*trav)->port1);
 		
-		map_set(&port_data_map, buf, routers[i]->port2);
+		map_set(&port_data_map, buf, (*trav)->port2);
 
-		map_set(&next_hop, buf, routers[i]->next_hop);
+		map_set(&next_hop, buf, (*trav)->next_hop);
 	}
 	const char *key;
         map_iter_t iter = map_iter(&weight_map);
@@ -108,14 +109,19 @@ void init_response(int sock_index, char* cntrl_payload, int payload_len){
 //Save routers at the id'th position in the array
 pair info = get_info(16, cntrl_payload, 0, 1, payload_len);
 int num_r = info.x;
-num_routers = num_r;
-router* routers[num_r];
+_numr = num_routers = num_r;
+
 int update = info.y;
 char* iter = cntrl_payload + 4;
+
+
 initialize_neighbors(num_r);
 int temp = 0;
 printf("------------------------------------------------\n");
 get_ip();
+routers = malloc((sizeof(router*)*_numr));
+router** trav = routers;
+
 for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 
 	char* id_b = strcat(char2bits(iter[i]), char2bits(iter[i+1]));
@@ -145,24 +151,27 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	printf("ip of router %i: %u\n", c, ip);
 	printf("router port: %u, data port: %u\n", router_port, data_port);
 	router* _router = malloc(sizeof(router));
-	routers[c] = _router;
-	routers[c]->id = id;
-	routers[c]->port1 = port1;
-	routers[c]->port2 = port2;
-	routers[c]->cost = cost;
-	routers[c]->ip = ip;
+	*trav = _router;
+	(*trav)->id = id;
+	(*trav)->port1 = port1;
+	(*trav)->port2 = port2;
+	(*trav)->cost = cost;
+	(*trav)->ip = ip;
+	(*trav)->strike = 0;
 	printf("neighbors: ");
-	if (cost == USHRT_MAX)routers[c]->next_hop = USHRT_MAX;
+	if (cost == USHRT_MAX)(*trav)->next_hop = USHRT_MAX;
 	else {
 		neighbors[temp] = id;		
 		printf("%u ", id);
 		temp++;
-		routers[c]->next_hop = id; 
+		(*trav)->next_hop = id; 
 	}
+	trav++;
 	printf("\n");
 printf("------------------------------------------------\n");
 }
-build_adj_list(routers);
+build_adj_list();
 initialize_dv(num_r);
 generate_response(sock_index);
+create_router_sock();
 };

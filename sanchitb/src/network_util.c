@@ -31,6 +31,17 @@
 #include <arpa/inet.h>
 #include "../include/global.h"
 
+char* get_routing_update(int sock_index, uint32_t* src_ip){
+	char* data = malloc(69*(sizeof(char)));
+        struct sockaddr_in from;
+	memset(data, '\0', 69);
+	int len = sizeof(from);
+	*src_ip = from.sin_addr.s_addr;
+        int bytes = recvfrom(sock_index, data, 68, 0, &from, &len);
+		
+	return data;
+
+}
 ssize_t recvALL(int sock_index, char *buffer, ssize_t nbytes)
 {
     ssize_t bytes = 0;
