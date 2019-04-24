@@ -30,6 +30,7 @@ uint_map_t index_map;
 char ip[16];
 unsigned long ip_l;
 int dv[5][5]; 
+int update_interval;
 Queue queue;
 int _numr;
 
@@ -55,6 +56,11 @@ router** routers;
 typedef struct{
 	long x, y;
 }pair;
+
+typedef struct{
+	router* r;
+	struct timeval * to;
+}timeout_qpair;
 
 pair get_info(int, char*, int, int, int);
 receiver get_sendfile_info(char*);

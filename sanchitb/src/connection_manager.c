@@ -70,7 +70,13 @@ void main_loop()
 			printf("data received on router socket: %s\n", data);
 			for (int z = 0; z < _numr; ++z){
 				if (routers[z]->ip == src_ip){ 
-					push(&queue, routers[z]);		
+					timeout_qpair qpair;
+					qpair.r = routers[z];
+					//TODO: change this to the actual timeout
+					struct timeval tv = {3, 0};
+					qpair.to = &tv;
+					push(&queue, &qpair);		
+					printf("pushing ip: %u\n", src_ip);
 				}	
 			}
 		}
@@ -106,6 +112,6 @@ void init()
     /* Register the control socket */
     FD_SET(control_socket, &master_list);
     head_fd = control_socket;
-    qinit(&queue, sizeof(router)); 
+    qinit(&queue, sizeof(timeout_qpair)); 
     main_loop();
 }

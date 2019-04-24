@@ -111,7 +111,7 @@ pair info = get_info(16, cntrl_payload, 0, 1, payload_len);
 int num_r = info.x;
 _numr = num_routers = num_r;
 
-int update = info.y;
+update_interval = info.y;
 char* iter = cntrl_payload + 4;
 
 

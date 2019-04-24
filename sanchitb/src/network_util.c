@@ -36,9 +36,8 @@ char* get_routing_update(int sock_index, uint32_t* src_ip){
         struct sockaddr_in from;
 	memset(data, '\0', 69);
 	int len = sizeof(from);
-	*src_ip = from.sin_addr.s_addr;
         int bytes = recvfrom(sock_index, data, 68, 0, &from, &len);
-		
+	*src_ip = ntohl(from.sin_addr.s_addr);
 	return data;
 
 }
