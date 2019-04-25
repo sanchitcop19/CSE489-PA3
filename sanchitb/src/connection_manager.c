@@ -76,8 +76,8 @@ void main_loop()
 			printq(&queue);
 			peek(&queue, &next);
 			timeout.tv_sec = (next.to)->tv_sec - now;
-			printf("editing the new front's timeout to %u\n", timeout.tv_sec);
-			timeout.tv_usec = (next.to)->tv_usec;
+			timeout.tv_usec = 0;
+			printf("editing the new front's timeout to %u:%u\n", timeout.tv_sec, timeout.tv_usec);
 		}
 		else{
 			(front.r)->strike++;
