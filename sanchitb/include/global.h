@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include "map.h"
-#include "Queue.h"
 typedef enum {FALSE, TRUE} bool;
 #define ERROR(err_msg) {perror(err_msg); exit(EXIT_FAILURE);}
 
@@ -32,9 +31,10 @@ char ip[16];
 unsigned long ip_l;
 int dv[5][5]; 
 int update_interval;
-Queue queue;
+
 int _numr;
 struct timeval timeout;
+
 
 typedef struct{
         uint16_t id;
@@ -63,6 +63,9 @@ typedef struct{
 	router* r;
 	struct timeval * to;
 }timeout_qpair;
+
+timeout_qpair* queue[5];
+
 
 pair get_info(int, char*, int, int, int);
 receiver get_sendfile_info(char*);

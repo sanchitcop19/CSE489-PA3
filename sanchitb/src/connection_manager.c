@@ -28,7 +28,7 @@
 #include "../include/global.h"
 #include "../include/control_handler.h"
 #include "../include/network_util.h"
-#include "../include/Queue.h"
+#include "../include/queue.h"
 
 fd_set master_list, watch_list;
 int head_fd;
@@ -50,16 +50,18 @@ void main_loop()
         if(selret < 0)
             ERROR("select failed.");
 	if (selret == 0){
+		printq();
 		printf("----------TIMEOUT BEGIN--------\n"); 
 		timeout_qpair front;
 		timeout_qpair next;
 		printf("-----------------------------\n");
 		printf("status of queue before popping: \n");
-		printq(&queue);
-		pop(&queue, &front);
+		printq();
+		front = *(peek());
+		pop();
 		printf("-----------------------------\n");
 		printf("status of queue after popping: \n");
-		printq(&queue);
+		printq();
 			time_t now = time(NULL);	
 			printf("current time: %u\n", now);
 		if ((front.r)->ip == self_ip){
@@ -67,15 +69,16 @@ void main_loop()
 			send_updates();
 			printf("-----------------------------\n");
 			printf("status of queue before pushing: \n");
-			printq(&queue);
+			printq();
 			(front.to)->tv_sec = (now + update_interval);
 			(front.to)->tv_usec = 0;
-			push(&queue, &front);
+			push(&front);
 			printf("-----------------------------\n");
 			printf("status of queue after pushing: \n");
-			printq(&queue);
-			peek(&queue, &next);
-			timeout.tv_sec = (next.to)->tv_sec - now;
+			printq();
+			next = *(peek());
+			uint32_t save = (next.to)->tv_sec;
+			timeout.tv_sec =  save - now;
 			timeout.tv_usec = 0;
 			printf("editing the new front's timeout to %u:%u\n", timeout.tv_sec, timeout.tv_usec);
 		}
@@ -83,8 +86,8 @@ void main_loop()
 			(front.r)->strike++;
 			(front.to)->tv_sec = (now + update_interval);
 			(front.to)->tv_usec = 500;
-			if (size(&queue) > 0){
-				peek(&queue, &next);
+			if (size() > 0){
+				peek();
 				timeout.tv_sec = (next.to)->tv_sec - now;
 				printf("editing the new front's timeout to %u\n", timeout.tv_sec);
 				timeout.tv_usec = (next.to)->tv_usec;
@@ -96,14 +99,14 @@ void main_loop()
 			} 
 			printf("-----------------------------\n");
 			printf("status of queue before pushing: \n");
-			printq(&queue);
-			push(&queue, &front);
+			printq();
+			push(&front);
 			printf("-----------------------------\n");
 			printf("status of queue after pushing: \n");
-			printq(&queue);
+			printq();
 			
-			printf("----------TIMEOUT END--------\n"); 
 		}
+			printf("----------TIMEOUT END--------\n"); 
 	}
         /* Loop through file descriptors to check which ones are ready */
         for(sock_index=0; sock_index<=head_fd; sock_index+=1){
@@ -127,7 +130,7 @@ void main_loop()
 			printf("data received on router socket: %s", data);
 
 			printf("before receiving update: \n");
-			printq(&queue);
+			printq();
 			
 			for (int z = 0; z < _numr; ++z){
 				if (routers[z]->ip == src_ip){ 
@@ -138,20 +141,20 @@ void main_loop()
 					time_t now = time(NULL);
 					struct timeval tv = {now + update_interval, 500};
 					qpair.to = &tv;
-					push(&queue, &qpair);		
+					push(&qpair);		
 					printf("current time: %u ,", now);
 					printf("pushing router id: %u with timeout %u\n", routers[z]->id, tv.tv_sec);
-					peek(&queue, &next); 
-					if ((next.r)->ip == src_ip && size(&queue) > 1){
-						pop(&queue, NULL);
-						peek(&queue, &next); 
+					peek(); 
+					if ((next.r)->ip == src_ip && size() > 1){
+						pop();
+						peek(); 
 					}
 					timeout.tv_sec = ((next.to)->tv_sec) - now;
 					timeout.tv_usec = (next.to)->tv_usec;
-					//verify the logic for this
+				//verify the logic for this
 					//remove if negative
 			printf("after receiving update: \n");
-			printq(&queue);
+			printq();
 			printf("-------------------------------\n");
 				}	
 			}
@@ -165,8 +168,11 @@ void main_loop()
                 else{
                     if(isControl(sock_index)){
                         if(!control_recv_hook(sock_index)) FD_CLR(sock_index, &master_list);
-		    	else printf("Received control message\n");
-                    }
+		    	else {
+				printf("Received control message\n");
+				printq();
+                    	}
+			}
                     //else if isData(sock_index);
                     else ERROR("Unknown socket index");
                 }
@@ -190,6 +196,5 @@ void init()
     /* Register the control socket */
     FD_SET(control_socket, &master_list);
     head_fd = control_socket;
-    qinit(&queue, sizeof(timeout_qpair)); 
     main_loop();
 }

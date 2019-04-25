@@ -31,6 +31,7 @@
 #include "../include/network_util.h"
 #include "../include/map.h"
 #include "../include/control_handler.h"
+#include "../include/queue.h"
 
 int num_routers = 5;
 
@@ -176,11 +177,15 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	
 		time_t now = time(NULL);        
 		printf("current time: %u\n", now);
-                struct timeval temp = {now + update_interval, 0};       
-		printf("timeout: %u\n", temp.tv_sec);
-                timeout_qpair self = {_router, &temp};
-                push(&queue, &self);
-		printq(&queue);
+		struct timeval* temp = malloc(sizeof(struct timeval));
+		temp->tv_sec = now + update_interval;
+		temp->tv_usec = 0;
+		printf("timeout: %u\n", temp->tv_sec);
+                timeout_qpair *self = malloc(sizeof(timeout_qpair));
+		self->r = _router;
+		self->to = temp;
+                push(self);
+		printq();
                 timeout.tv_sec = update_interval;
                 timeout.tv_usec = 0;
 	}
@@ -192,5 +197,5 @@ build_adj_list();
 initialize_dv(num_r);
 generate_response(sock_index);
 create_router_sock();
-printq(&queue);
+printq();
 };
