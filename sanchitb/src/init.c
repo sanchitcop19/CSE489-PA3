@@ -23,6 +23,9 @@
 
 #include <string.h>
 #include <limits.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "../include/global.h"
 #include "../include/control_header_lib.h"
 #include "../include/network_util.h"
@@ -112,6 +115,7 @@ int num_r = info.x;
 _numr = num_routers = num_r;
 
 update_interval = info.y;
+printf("update interval: %i\n", update_interval);
 char* iter = cntrl_payload + 4;
 
 
@@ -146,11 +150,13 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	ip_b = strcat(ip_b, tmp);
 	printf("ip of router %i in binary: %s\n", c, ip_b);
 	unsigned long ip = strtol(ip_b, NULL, 2);
-	if (ip == ip_l)self_id = id;
-	if (ip == ip_l){router_port = port1;data_port = port2;}
+	router* _router = malloc(sizeof(router));
+	if (ip == ip_l){
+		router_port = port1;
+		data_port = port2;
+	}
 	printf("ip of router %i: %u\n", c, ip);
 	printf("router port: %u, data port: %u\n", router_port, data_port);
-	router* _router = malloc(sizeof(router));
 	*trav = _router;
 	(*trav)->id = id;
 	(*trav)->port1 = port1;
@@ -166,6 +172,18 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 		temp++;
 		(*trav)->next_hop = id; 
 	}
+	if (ip == ip_l){self_id = id;self_ip = ip;
+	
+		time_t now = time(NULL);        
+		printf("current time: %u\n", now);
+                struct timeval temp = {now + update_interval, 0};       
+		printf("timeout: %u\n", temp.tv_sec);
+                timeout_qpair self = {_router, &temp};
+                push(&queue, &self);
+		printq(&queue);
+                timeout.tv_sec = update_interval;
+                timeout.tv_usec = 0;
+	}
 	trav++;
 	printf("\n");
 printf("------------------------------------------------\n");
@@ -174,4 +192,5 @@ build_adj_list();
 initialize_dv(num_r);
 generate_response(sock_index);
 create_router_sock();
+printq(&queue);
 };

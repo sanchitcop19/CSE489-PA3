@@ -30,7 +30,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "../include/global.h"
+void send_updates(){
 
+}
 char* get_routing_update(int sock_index, uint32_t* src_ip){
 	char* data = malloc(69*(sizeof(char)));
         struct sockaddr_in from;

@@ -20,6 +20,7 @@ int push(Queue *, const void *);
 void pop(Queue *, void *);
 void peek(Queue *, void *);
 void clearq(Queue *);
+void printq(Queue *);
 int size(Queue *);
 
 #endif /* QUEUE_H_INCLUDED */

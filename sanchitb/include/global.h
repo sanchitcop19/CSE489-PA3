@@ -13,6 +13,7 @@ typedef enum {FALSE, TRUE} bool;
 #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)])) // Interesting stuff to read if you are interested to know how this works
 unsigned long neighbors[5];
 uint16_t self_id;
+unsigned long self_ip;
 uint16_t router_port; 
 uint16_t data_port;
 
@@ -33,6 +34,7 @@ int dv[5][5];
 int update_interval;
 Queue queue;
 int _numr;
+struct timeval timeout;
 
 typedef struct{
         uint16_t id;

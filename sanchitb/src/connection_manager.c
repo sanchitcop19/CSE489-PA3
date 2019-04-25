@@ -37,7 +37,7 @@ void main_loop()
 {
     int selret, sock_index, fdaccept;
 	int router_disabled = 1;
-	struct timeval timeout = {100, 0};
+	timeout.tv_sec = 1000;
     while(TRUE){
         watch_list = master_list;
 	if (router_socket > -1 && router_disabled){
@@ -50,32 +50,60 @@ void main_loop()
         if(selret < 0)
             ERROR("select failed.");
 	if (selret == 0){
-		printf("timeout\n");
-		//Take the first element, increment its strike count
-		//Remove the first element and push it to the back with updated timeout	
+		printf("----------TIMEOUT BEGIN--------\n"); 
 		timeout_qpair front;
 		timeout_qpair next;
+		printf("-----------------------------\n");
+		printf("status of queue before popping: \n");
+		printq(&queue);
 		pop(&queue, &front);
-		printf("popping the front of the queue\n");
-		(front.r)->strike++;
-		time_t now = time(NULL);	
-		printf("current time: %u\n", now);
-		(front.to)->tv_sec = (now + update_interval);
-		(front.to)->tv_usec = 500;
-		if (size(&queue) > 0){
+		printf("-----------------------------\n");
+		printf("status of queue after popping: \n");
+		printq(&queue);
+			time_t now = time(NULL);	
+			printf("current time: %u\n", now);
+		if ((front.r)->ip == self_ip){
+			printf("sending updates...\n");
+			send_updates();
+			printf("-----------------------------\n");
+			printf("status of queue before pushing: \n");
+			printq(&queue);
+			(front.to)->tv_sec = (now + update_interval);
+			(front.to)->tv_usec = 0;
+			push(&queue, &front);
+			printf("-----------------------------\n");
+			printf("status of queue after pushing: \n");
+			printq(&queue);
 			peek(&queue, &next);
 			timeout.tv_sec = (next.to)->tv_sec - now;
 			printf("editing the new front's timeout to %u\n", timeout.tv_sec);
 			timeout.tv_usec = (next.to)->tv_usec;
-		}	
+		}
 		else{
-			timeout.tv_sec = update_interval;
-			printf("only one item, editing the select timeout to %u\n", timeout.tv_sec);
-		 	timeout.tv_usec = 500;
-		} 
-		push(&queue, &front);
-		printf("pushing the previous front to the back\n");
-		
+			(front.r)->strike++;
+			(front.to)->tv_sec = (now + update_interval);
+			(front.to)->tv_usec = 500;
+			if (size(&queue) > 0){
+				peek(&queue, &next);
+				timeout.tv_sec = (next.to)->tv_sec - now;
+				printf("editing the new front's timeout to %u\n", timeout.tv_sec);
+				timeout.tv_usec = (next.to)->tv_usec;
+			}	
+			else{
+				timeout.tv_sec = update_interval;
+				printf("only one item, editing the select timeout to %u\n", timeout.tv_sec);
+				timeout.tv_usec = 500;
+			} 
+			printf("-----------------------------\n");
+			printf("status of queue before pushing: \n");
+			printq(&queue);
+			push(&queue, &front);
+			printf("-----------------------------\n");
+			printf("status of queue after pushing: \n");
+			printq(&queue);
+			
+			printf("----------TIMEOUT END--------\n"); 
+		}
 	}
         /* Loop through file descriptors to check which ones are ready */
         for(sock_index=0; sock_index<=head_fd; sock_index+=1){
@@ -95,7 +123,12 @@ void main_loop()
                     //call handler that will call recvfrom() .....
                     	uint32_t src_ip = 0;
 			char* data = get_routing_update(sock_index, &src_ip);        
+			printf("-------------------------------\n");
 			printf("data received on router socket: %s", data);
+
+			printf("before receiving update: \n");
+			printq(&queue);
+			
 			for (int z = 0; z < _numr; ++z){
 				if (routers[z]->ip == src_ip){ 
 					timeout_qpair qpair;
@@ -109,10 +142,17 @@ void main_loop()
 					printf("current time: %u ,", now);
 					printf("pushing router id: %u with timeout %u\n", routers[z]->id, tv.tv_sec);
 					peek(&queue, &next); 
+					if ((next.r)->ip == src_ip && size(&queue) > 1){
+						pop(&queue, NULL);
+						peek(&queue, &next); 
+					}
 					timeout.tv_sec = ((next.to)->tv_sec) - now;
 					timeout.tv_usec = (next.to)->tv_usec;
 					//verify the logic for this
 					//remove if negative
+			printf("after receiving update: \n");
+			printq(&queue);
+			printf("-------------------------------\n");
 				}	
 			}
 		}

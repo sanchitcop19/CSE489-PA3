@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/Queue.h"
+#include "../include/global.h"
 
 /* https://codereview.stackexchange.com/questions/141238/implementing-a-generic-queue-in-c*/
 
@@ -52,6 +53,7 @@ void pop(Queue *q, void *data)
     if(q->sizeOfQueue > 0)
     {
         node *temp = q->head;
+	if (data != NULL)
         memcpy(data, temp->data, q->memSize);
 
         if(q->sizeOfQueue > 1)
@@ -79,6 +81,44 @@ void peek(Queue *q, void *data)
     }
 }
 
+void printq(Queue *q)
+{
+  node *temp;
+int size = q->sizeOfQueue;
+      temp = q->head;
+	if (size == 0){printf("[]\n");return;}
+printf("[");
+	if (temp){
+	timeout_qpair* p;
+	p = (timeout_qpair*)(temp->data);
+	printf("(router id: %hu, timeout: %lu), ", (p->r)->id, (p->to)->tv_sec);
+	if (temp->next){
+	timeout_qpair* p;
+	p = (timeout_qpair*)(temp->next->data);
+	printf("(router id: %hu, timeout: %lu), ", (p->r)->id, (p->to)->tv_sec);
+printf("]\n");
+	if (temp->next->next){
+	timeout_qpair* p;
+	p = (timeout_qpair*)(temp->next->next->data);
+	printf("(router id: %hu, timeout: %lu), ", (p->r)->id, (p->to)->tv_sec);
+printf("]\n");
+	if (temp->next->next->next){
+	timeout_qpair* p;
+	p = (timeout_qpair*)(temp->next->next->next->data);
+	printf("(router id: %hu, timeout: %lu), ", (p->r)->id, (p->to)->tv_sec);
+printf("]\n");
+	if (temp->next->next->next->next){
+	timeout_qpair* p;
+	p = (timeout_qpair*)(temp->next->next->next->next->data);
+	printf("(router id: %hu, timeout: %lu), ", (p->r)->id, (p->to)->tv_sec);
+printf("]\n");
+	}
+	}
+	}
+	}
+	}
+
+}
 void clearq(Queue *q)
 {
   node *temp;
