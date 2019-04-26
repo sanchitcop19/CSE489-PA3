@@ -39,8 +39,9 @@ void push(timeout_qpair* data) {
 }
 
 timeout_qpair* pop() {
+	int delete = front;
    timeout_qpair* data = queue[front++];
-	
+queue[delete] = NULL;	
    if(front == MAX) {
       front = 0;
    }
@@ -52,11 +53,16 @@ timeout_qpair* pop() {
 void printq(){
 	
 	int start = front;
-	while(start <= rear){
-		if (start == MAX){
-			start = 0;
-		}
-		printf("router id: %u, timeout: %u\n", queue[start]->r->id, queue[start]->to->tv_sec);	
+	while(start%5 != (rear+1)%5){
+		if (queue[start%5])printf("index: %i, router id: %u, timeout: %u\n",(start%5) , queue[start%5]->r->id, queue[start%5]->to->tv_sec);	
 		start++;
 	}
+}
+
+int getfront(){
+	return front;
+}
+
+int getrear(){
+	return rear;
 }

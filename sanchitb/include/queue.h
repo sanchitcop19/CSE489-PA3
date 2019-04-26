@@ -8,4 +8,6 @@ int size();
 void push(timeout_qpair* data);
 timeout_qpair* pop();
 void printq();
+int getfront();
+int getrear();
 #endif

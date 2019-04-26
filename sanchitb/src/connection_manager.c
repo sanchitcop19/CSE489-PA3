@@ -52,45 +52,53 @@ void main_loop()
 	if (selret == 0){
 		printq();
 		printf("----------TIMEOUT BEGIN--------\n"); 
-		timeout_qpair front;
-		timeout_qpair next;
+		timeout_qpair *front;
+		timeout_qpair *next;
 		printf("-----------------------------\n");
 		printf("status of queue before popping: \n");
 		printq();
-		front = *(peek());
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
+		front = (peek());
 		pop();
 		printf("-----------------------------\n");
 		printf("status of queue after popping: \n");
 		printq();
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
 			time_t now = time(NULL);	
 			printf("current time: %u\n", now);
-		if ((front.r)->ip == self_ip){
+		if ((front->r)->ip == self_ip){
 			printf("sending updates...\n");
 			send_updates();
 			printf("-----------------------------\n");
 			printf("status of queue before pushing: \n");
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
 			printq();
-			(front.to)->tv_sec = (now + update_interval);
-			(front.to)->tv_usec = 0;
-			push(&front);
+			(front->to)->tv_sec = (now + update_interval);
+			(front->to)->tv_usec = 0;
+			push(front);
 			printf("-----------------------------\n");
 			printf("status of queue after pushing: \n");
 			printq();
-			next = *(peek());
-			uint32_t save = (next.to)->tv_sec;
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
+			next = (peek());
+			uint32_t save = (next->to)->tv_sec;
 			timeout.tv_sec =  save - now;
 			timeout.tv_usec = 0;
 			printf("editing the new front's timeout to %u:%u\n", timeout.tv_sec, timeout.tv_usec);
 		}
 		else{
-			(front.r)->strike++;
-			(front.to)->tv_sec = (now + update_interval);
-			(front.to)->tv_usec = 500;
+			(front->r)->strike++;
+			(front->to)->tv_sec = (now + update_interval);
+			(front->to)->tv_usec = 500;
 			if (size() > 0){
-				peek();
-				timeout.tv_sec = (next.to)->tv_sec - now;
+				next = (peek());
+				timeout.tv_sec = (next->to)->tv_sec - now;
 				printf("editing the new front's timeout to %u\n", timeout.tv_sec);
-				timeout.tv_usec = (next.to)->tv_usec;
+				timeout.tv_usec = (next->to)->tv_usec;
 			}	
 			else{
 				timeout.tv_sec = update_interval;
@@ -99,10 +107,14 @@ void main_loop()
 			} 
 			printf("-----------------------------\n");
 			printf("status of queue before pushing: \n");
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
 			printq();
-			push(&front);
+			push(front);
 			printf("-----------------------------\n");
 			printf("status of queue after pushing: \n");
+		printf("head: %i\n", getfront());
+		printf("tail: %i\n", getrear());
 			printq();
 			
 		}
@@ -134,23 +146,25 @@ void main_loop()
 			
 			for (int z = 0; z < _numr; ++z){
 				if (routers[z]->ip == src_ip){ 
-					timeout_qpair qpair;
-					timeout_qpair next;
-					qpair.r = routers[z];
+					timeout_qpair *qpair = malloc(sizeof(timeout_qpair));
+					timeout_qpair *next = malloc(sizeof(timeout_qpair));
+					qpair->r = routers[z];
 					//TODO: change this to the actual timeout
 					time_t now = time(NULL);
-					struct timeval tv = {now + update_interval, 500};
-					qpair.to = &tv;
-					push(&qpair);		
+					struct timeval* tv = malloc(sizeof(struct timeval)); 
+					tv->tv_sec = now+update_interval;
+					tv->tv_usec = 500;
+					qpair->to = tv;
+					push(qpair);		
 					printf("current time: %u ,", now);
-					printf("pushing router id: %u with timeout %u\n", routers[z]->id, tv.tv_sec);
-					peek(); 
-					if ((next.r)->ip == src_ip && size() > 1){
+					printf("pushing router id: %u with timeout %u\n", routers[z]->id, tv->tv_sec);
+					next = (peek()); 
+					if ((next->r)->ip == src_ip && size() > 1){
 						pop();
-						peek(); 
+						next = (peek()); 
 					}
-					timeout.tv_sec = ((next.to)->tv_sec) - now;
-					timeout.tv_usec = (next.to)->tv_usec;
+					timeout.tv_sec = ((next->to)->tv_sec) - now;
+					timeout.tv_usec = (next->to)->tv_usec;
 				//verify the logic for this
 					//remove if negative
 			printf("after receiving update: \n");
