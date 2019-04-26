@@ -30,8 +30,61 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "../include/global.h"
-void send_updates(){
 
+char* make_packet(){
+	printf("making dv update packet----------------------\n");
+	char* payload;
+	//change ti nymber of neighbors
+	uint16_t len = 8 + (_numr*12);
+	printf("length of dv update packet: %u\n", len);
+	payload = malloc(len);
+	memset(payload, '\0', sizeof(payload));
+
+	uint16_t numrouters = htons(_numr);
+	char sid[50];
+	memset(sid, '\0', sizeof(sid));
+	sprintf(sid, "%u", self_id);
+	printf("id in string: %s\n", sid);
+	uint16_t routerport = htons(*map_get(&port_router_map, sid));
+	printf("routerport(after htons): %u, id: %s\n", routerport, sid);
+	const char *key;
+        map_iter_t iter = map_iter(&weight_map);
+
+	//adding first two fields
+	memcpy(payload, &numrouters, sizeof(numrouters));
+	memcpy(payload + TWOB, &routerport, sizeof(routerport));
+	uint32_t ipcopy = htonl(self_ip);
+	memcpy(payload + FOURB, &(ipcopy), sizeof(self_ip));
+		
+	short off = 0;
+        while ((key = map_next(&weight_map, &iter))) {
+                printf("%s -> %d\n", key, *map_get(&weight_map, key));
+		printf("(adding info in dv update packet\n)");
+		uint32_t ip_addr = *(map_get(&ip_map, key));
+		ip_addr = htonl(ip_addr);
+		uint16_t rport = *(map_get(&port_router_map, key));
+		rport = htons(rport);
+		uint16_t _id = strtol(key, NULL, 10);
+		_id = htons(_id);	
+		//should i choose base 10?
+		uint16_t cost = *(map_get(&weight_map, key));
+		cost = htons(cost);
+		memcpy(payload + 0x08 + off, &ip_addr, sizeof(ip_addr));	
+		memcpy(payload + 0x08 + off + FOURB, &rport, sizeof(rport));	
+		memcpy(payload + 0x08 + off + FOURB + FOURB, &_id, sizeof(_id));	
+		memcpy(payload + 0x08 + off + FOURB + FOURB + TWOB, &cost, sizeof(cost));	
+		off += 0x0c;
+        }
+	return payload;
+
+	
+}
+void send_updates(){
+	char* packet = make_packet();
+	for (int z = 0; z < _numr; ++z){
+		unsigned long _id = neighbors[z];
+		//sendto(packet)	
+	}	
 }
 char* get_routing_update(int sock_index, uint32_t* src_ip){
 	char* data = malloc(69*(sizeof(char)));
