@@ -31,7 +31,6 @@
 #include "../include/network_util.h"
 #include "../include/map.h"
 #include "../include/control_handler.h"
-#include "../include/queue.h"
 
 int num_routers = 5;
 
@@ -87,7 +86,7 @@ void build_adj_list(){
 	map_init(&index_map);
 	map_init(&sock_map);
 	router** trav = routers;
-	for (int i = 0; i < _numneighbors; ++i, ++trav){
+	for (int i = 0; i < _numr; ++i, ++trav){
 
 		memset(buf, '\0', sizeof buf);
 		sprintf(buf, "%u", (*trav)->id);

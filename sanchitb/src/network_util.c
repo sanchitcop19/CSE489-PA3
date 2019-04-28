@@ -94,6 +94,13 @@ void send_updates(){
 		unsigned long _id = neighbors[z];
 		if (_id == self_id)continue;
 		printf("printing id to array\n");
+		const char *key;
+	        map_iter_t iter = map_iter(&ip_map);
+
+        	while ((key = map_next(&ip_map, &iter))) {
+                	printf("%s -> %d\n", key, *map_get(&ip_map, key));
+        	}
+
 		sprintf(id_s, "%u", _id);	
 		uint32_t ipaddr = *map_get(&ip_map, id_s);
 		uint16_t port = *(map_get(&port_router_map, id_s));

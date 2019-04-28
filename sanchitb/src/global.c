@@ -1,5 +1,8 @@
 #include <string.h>
+#include <limits.h>
+#include <arpa/inet.h>
 #include "../include/global.h"
+#define OFF 0x0c
 
 void initialize_neighbors(int num_r){
 	for (int i = 0; i < num_r; ++i){
@@ -89,4 +92,61 @@ void print_dv(){
 		printf("\n");
 	} 
 }
+void process_dv(char* data){
+	char* numupdates = strcat(char2bits(data[0]), char2bits(data[1]));	
+	uint16_t num_updates = strtol(numupdates, NULL, 2);
+	//num_updates = ntohs(num_updates);
 
+	char* interval = strcat(char2bits(data[2]), char2bits(data[3]));	
+	uint16_t uinterval = strtol(interval, NULL, 2);
+	//uinterval = ntohs(uinterval);
+	
+	char* sourceip = strcat(char2bits(data[4]), char2bits(data[5]));	
+	strcat(sourceip, char2bits(data[6]));
+	strcat(sourceip, char2bits(data[7]));
+	uint32_t sip = strtol(sourceip, NULL, 2);
+	//sip = ntohl(sip);
+	//
+		const char * key;
+		unsigned int temprow = USHRT_MAX;
+		map_iter_t iter = map_iter(&ip_map);
+		while(key = map_next(&ip_map, &iter)){
+			if (*(map_get(&ip_map, key)) == sip){
+				temprow = *(map_get(&index_map, key));	
+			}
+		}
+
+	char* srcip;
+	char* port;
+	char* id;
+	char* cost;
+	uint32_t usrcip;
+	uint16_t uport;
+	uint16_t uid;
+	uint16_t ucost;
+	for (uint16_t counter = 0; counter < num_updates; ++counter){
+		uint16_t index = counter*OFF + 0x08;
+			
+		srcip = strcat(char2bits(data[index]), char2bits(data[index + 1]));	
+		strcat(srcip, char2bits(data[index + 2]));
+		strcat(srcip, char2bits(data[index + 3]));
+		usrcip = strtol(srcip, NULL, 2);
+	//	usrcip = ntohl(usrcip);
+		port = strcat(char2bits(data[index+4]), char2bits(data[index+5]));	
+		uport = strtol(port, NULL, 2);
+	//	uport = ntohs(uport);
+	
+		id = strcat(char2bits(data[index+8]), char2bits(data[index+9]));
+		uid = strtol(id, NULL, 2);
+	//	uid = ntohs(uid);
+		char idasstring[50];
+		sprintf(idasstring, "%u", uid);
+		unsigned int tempcol = *map_get(&index_map, idasstring);	
+			
+		cost = strcat(char2bits(data[index+10]), char2bits(data[index+11]));
+		ucost = strtol(cost, NULL, 2);
+	//	ucost = ntohs(ucost);
+		dv[temprow][tempcol] = ucost;		
+	}	
+	
+}

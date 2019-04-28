@@ -81,3 +81,4 @@ void initialize_neighbors(int);
 void print_dv();
 void print_map(uint_map_t);
 #endif
+void process_dv();

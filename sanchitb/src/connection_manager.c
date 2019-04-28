@@ -29,7 +29,6 @@
 #include "../include/global.h"
 #include "../include/control_handler.h"
 #include "../include/network_util.h"
-#include "../include/queue.h"
 #include "../include/map.h"
 
 fd_set master_list, watch_list;
@@ -173,7 +172,7 @@ printf("timeout: %u, %u\n", timeout.tv_sec, timeout.tv_usec);
 			char* data = get_routing_update(sock_index, &src_ip);        
 			printf("-------------------------------\n");
 			printf("data received on router socket: %s\n", data);
-
+			process_dv(data);
 			//printf("before receiving update: \n");
 			//printq();
 		/*	
