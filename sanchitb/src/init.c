@@ -49,11 +49,12 @@ void initialize_dv(int num){
 		printf("Mapping id %s to index %i\n", key, i);
 		map_set(&index_map, key, i);
 		printf("weight for self == 0: %u\n", *map_get(&weight_map, key));
-		if (*map_get(&weight_map, key) == 0) row = i;	
+		if (*map_get(&weight_map, key) == 0) {row = i;};	
 		i++;
         }
 	iter = map_iter(&index_map);
 	print_map(weight_map);
+	_row = row;
         while ((key = map_next(&index_map, &iter))) {
 		unsigned int index = *map_get(&index_map, key);
 		unsigned int cost = *map_get(&weight_map, key);
@@ -166,6 +167,7 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	(*trav)->cost = cost;
 	(*trav)->ip = ip;
 	(*trav)->strike = 0;
+	(*trav)->lastupdate = 0;
 	printf("neighbors: ");
 	if (cost == USHRT_MAX)(*trav)->next_hop = USHRT_MAX;
 	else {
@@ -186,8 +188,8 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
                 timeout_qpair *self = malloc(sizeof(timeout_qpair));
 		self->r = _router;
 		self->to = temp;
-                push(self);
-		printq();
+                //push(self);
+		//printq();
                 timeout.tv_sec = update_interval;
                 timeout.tv_usec = 0;
 	}
@@ -199,5 +201,5 @@ build_adj_list();
 initialize_dv(num_r);
 generate_response(sock_index);
 create_router_sock();
-printq();
+//printq();
 };

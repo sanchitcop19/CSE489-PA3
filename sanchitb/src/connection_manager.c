@@ -24,11 +24,13 @@
 
 #include <sys/select.h>
 #include <time.h>
+#include <limits.h>
 #include "../include/connection_manager.h"
 #include "../include/global.h"
 #include "../include/control_handler.h"
 #include "../include/network_util.h"
 #include "../include/queue.h"
+#include "../include/map.h"
 
 fd_set master_list, watch_list;
 int head_fd;
@@ -37,6 +39,7 @@ void main_loop()
 {
     int selret, sock_index, fdaccept;
 	int router_disabled = 1;
+	
 	timeout.tv_sec = 1000;
     while(TRUE){
         watch_list = master_list;
@@ -48,10 +51,12 @@ void main_loop()
         selret = select(head_fd+1, &watch_list, NULL, NULL, &timeout);
 time_t t = time(NULL);
 printf("current time: %u\n", t);
+printf("timeout: %u, %u\n", timeout.tv_sec, timeout.tv_usec);
 
         if(selret < 0)
             ERROR("select failed.");
 	if (selret == 0){
+		/*
 		printq();
 		printf("----------TIMEOUT BEGIN--------\n"); 
 		timeout_qpair *front;
@@ -68,9 +73,12 @@ printf("current time: %u\n", t);
 		printq();
 		printf("head: %i\n", getfront());
 		printf("tail: %i\n", getrear());
-			time_t now = time(NULL);	
+		*/	time_t now = time(NULL);	
 			printf("current time: %u\n", now);
-		if ((front->r)->ip == self_ip){
+			printf("sending updates...\n");
+		
+
+			/*
 			printf("sending updates...\n");
 			send_updates();
 			printf("-----------------------------\n");
@@ -87,15 +95,39 @@ printf("current time: %u\n", t);
 		printf("head: %i\n", getfront());
 		printf("tail: %i\n", getrear());
 			next = (peek());
-			uint32_t save = (next->to)->tv_sec;
-			timeout.tv_sec =  save - now;
+			uint32_t save = (next->to)->tv_sec;*/
+			unsigned int index = 0;
+			router* rout;
+			for (int z = 0; z < _numneighbors; ++z){
+				rout = routers[z];
+				if (rout->ip == self_ip)continue;
+				if (now-(rout->lastupdate) > update_interval)rout->strike++;		
+				const char *key;
+				map_iter_t iter = map_iter(&weight_map);
+				 while ((key = map_next(&weight_map, &iter))) {
+					if (*map_get(&ip_map, key) == rout->ip){
+						printf("ip_map for key: %s is %u\n", key, *map_get(&ip_map, key));
+						printf("rout->ip: %u\n", rout->ip);
+			                	index = *map_get(&index_map, key);
+						break;
+					}
+					
+				}
+				if (rout->strike == 3){
+					printf("removing router: %s\n", key);	
+					dv[_row][index] = USHRT_MAX;
+				}
+			}
+				
+			send_updates();
+			print_dv();
+			timeout.tv_sec = update_interval;
 			timeout.tv_usec = 0;
-			printf("editing the new front's timeout to %u:%u\n", timeout.tv_sec, timeout.tv_usec);
-		}
-		else{
+			printf("----------TIMEOUT END--------\n"); 
+		/*else{
 			(front->r)->strike++;
 			(front->to)->tv_sec = (now + update_interval);
-			(front->to)->tv_usec = 500;
+			(front->to)->tv_usec = 0;
 			if (size() > 0){
 				next = (peek());
 				timeout.tv_sec = (next->to)->tv_sec - now;
@@ -105,22 +137,21 @@ printf("current time: %u\n", t);
 			else{
 				timeout.tv_sec = update_interval;
 				printf("only one item, editing the select timeout to %u\n", timeout.tv_sec);
-				timeout.tv_usec = 500;
+				timeout.tv_usec = 0;
 			} 
 			printf("-----------------------------\n");
 			printf("status of queue before pushing: \n");
 		printf("head: %i\n", getfront());
 		printf("tail: %i\n", getrear());
-			printq();
-			push(front);
+			//printq();
+			//push(front);
 			printf("-----------------------------\n");
 			printf("status of queue after pushing: \n");
 		printf("head: %i\n", getfront());
 		printf("tail: %i\n", getrear());
-			printq();
+			//printq();
 			
-		}
-			printf("----------TIMEOUT END--------\n"); 
+		}*/
 	}
         /* Loop through file descriptors to check which ones are ready */
         for(sock_index=0; sock_index<=head_fd; sock_index+=1){
@@ -141,23 +172,23 @@ printf("current time: %u\n", t);
                     	uint32_t src_ip = 0;
 			char* data = get_routing_update(sock_index, &src_ip);        
 			printf("-------------------------------\n");
-			printf("data received on router socket: %s", data);
+			printf("data received on router socket: %s\n", data);
 
-			printf("before receiving update: \n");
-			printq();
-			
+			//printf("before receiving update: \n");
+			//printq();
+		/*	
 			for (int z = 0; z < _numr; ++z){
 				if (routers[z]->ip == src_ip){ 
-					timeout_qpair *qpair = malloc(sizeof(timeout_qpair));
+					//timeout_qpair *qpair = malloc(sizeof(timeout_qpair));
 					timeout_qpair *next = malloc(sizeof(timeout_qpair));
 					qpair->r = routers[z];
 					//TODO: change this to the actual timeout
 					time_t now = time(NULL);
 					struct timeval* tv = malloc(sizeof(struct timeval)); 
 					tv->tv_sec = now+update_interval;
-					tv->tv_usec = 500;
+					tv->tv_usec = 0;
 					qpair->to = tv;
-					push(qpair);		
+					//push(qpair);		
 					printf("current time: %u ,", now);
 					printf("pushing router id: %u with timeout %u\n", routers[z]->id, tv->tv_sec);
 					next = (peek()); 
@@ -170,10 +201,10 @@ printf("current time: %u\n", t);
 				//verify the logic for this
 					//remove if negative
 			printf("after receiving update: \n");
-			printq();
+			//printq();
 			printf("-------------------------------\n");
 				}	
-			}
+			}*/
 		}
 
                 /* data_socket */
@@ -186,7 +217,7 @@ printf("current time: %u\n", t);
                         if(!control_recv_hook(sock_index)) FD_CLR(sock_index, &master_list);
 		    	else {
 				printf("Received control message\n");
-				printq();
+				//printq();
                     	}
 			}
                     //else if isData(sock_index);

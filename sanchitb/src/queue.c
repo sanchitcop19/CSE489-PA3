@@ -52,10 +52,11 @@ queue[delete] = NULL;
 
 void printq(){
 	
-	int start = front;
-	while(start%5 != (rear+1)%5){
-		if (queue[start%5])printf("index: %i, router id: %u, timeout: %u\n",(start%5) , queue[start%5]->r->id, queue[start%5]->to->tv_sec);	
-		start++;
+	int index = 0;
+	while(index != 5){
+		if (queue[index%5])printf("index: %i, router id: %u, timeout: %u\n",(index%5) , queue[index%5]->r->id, queue[index%5]->to->tv_sec);	
+		else printf("index: %i, NULL\n", index);
+		++index;
 	}
 }
 

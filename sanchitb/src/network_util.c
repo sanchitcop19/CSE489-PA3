@@ -29,6 +29,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include "../include/global.h"
 
 char* make_packet(){
@@ -109,6 +110,12 @@ char* get_routing_update(int sock_index, uint32_t* src_ip){
 	int len = sizeof(from);
         int bytes = recvfrom(sock_index, data, 68, 0, &from, &len);
 	*src_ip = ntohl(from.sin_addr.s_addr);
+	for (int i = 0; i < _numneighbors;++i){
+		router* rout = routers[i];
+		if (rout->ip == *src_ip){
+			rout->lastupdate = (unsigned long)time(NULL);
+		}
+	}
 	return data;
 
 }
