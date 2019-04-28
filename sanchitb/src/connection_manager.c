@@ -46,6 +46,8 @@ void main_loop()
 			if (router_socket > head_fd)head_fd = router_socket;
 		}
         selret = select(head_fd+1, &watch_list, NULL, NULL, &timeout);
+time_t t = time(NULL);
+printf("current time: %u\n", t);
 
         if(selret < 0)
             ERROR("select failed.");
