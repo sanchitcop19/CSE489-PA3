@@ -84,8 +84,9 @@ void build_adj_list(){
 	map_init(&port_data_map);	
 	map_init(&next_hop);
 	map_init(&index_map);
+	map_init(&sock_map);
 	router** trav = routers;
-	for (int i = 0; i < num_routers; ++i, ++trav){
+	for (int i = 0; i < _numneighbors; ++i, ++trav){
 
 		memset(buf, '\0', sizeof buf);
 		sprintf(buf, "%u", (*trav)->id);
@@ -113,8 +114,8 @@ void init_response(int sock_index, char* cntrl_payload, int payload_len){
 //Save routers at the id'th position in the array
 pair info = get_info(16, cntrl_payload, 0, 1, payload_len);
 int num_r = info.x;
-_numr = num_routers = num_r;
-
+_numr = num_r;
+_numneighbors = 0;
 update_interval = info.y;
 printf("update interval: %i\n", update_interval);
 char* iter = cntrl_payload + 4;
@@ -168,7 +169,8 @@ for (int c = 0, i = 0; c < num_r; ++c, iter += 12){
 	printf("neighbors: ");
 	if (cost == USHRT_MAX)(*trav)->next_hop = USHRT_MAX;
 	else {
-		neighbors[temp] = id;		
+		neighbors[temp] = id;
+		_numneighbors++;		
 		printf("%u ", id);
 		temp++;
 		(*trav)->next_hop = id; 

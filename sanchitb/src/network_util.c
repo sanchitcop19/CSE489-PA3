@@ -81,10 +81,26 @@ char* make_packet(){
 }
 void send_updates(){
 	char* packet = make_packet();
-	for (int z = 0; z < _numr; ++z){
+	char id_s[50];
+	char ip_s[16];
+	int sock = socket(PF_INET, SOCK_DGRAM, 0);
+	struct sockaddr_in to;
+	printf("filling in the address\n");
+	to.sin_family = AF_INET;
+	//to.sin_port = htons(router_port);
+	for (int z = 0; z < _numneighbors; ++z){
+		memset(id_s, '\0', sizeof(id_s));
 		unsigned long _id = neighbors[z];
-		//sendto(packet)	
+		if (_id == self_id)continue;
+		printf("printing id to array\n");
+		sprintf(id_s, "%u", _id);	
+		uint32_t ipaddr = *map_get(&ip_map, id_s);
+		uint16_t port = *(map_get(&port_router_map, id_s));
+		to.sin_port = htons(port);
+		to.sin_addr.s_addr = htonl(ipaddr);
+		sendto(sock, packet, 68, 0, &to, sizeof(to));
 	}	
+	printf("reached the end\n");
 }
 char* get_routing_update(int sock_index, uint32_t* src_ip){
 	char* data = malloc(69*(sizeof(char)));

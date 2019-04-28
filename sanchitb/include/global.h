@@ -29,11 +29,14 @@ uint_map_t port_router_map;
 uint_map_t port_data_map;
 uint_map_t next_hop;
 uint_map_t index_map;
+uint_map_t sock_map;
+
 char ip[16];
 unsigned long ip_l;
 int dv[5][5]; 
 int update_interval;
 
+int _numneighbors;
 int _numr;
 struct timeval timeout;
 
