@@ -115,6 +115,13 @@ printf("timeout: %u, %u\n", timeout.tv_sec, timeout.tv_usec);
 				if (rout->strike == 3){
 					printf("removing router: %s\n", key);	
 					dv[_row][index] = USHRT_MAX;
+					uint16_t rid = rout->id;
+					char sid[50];
+					memset(sid, '\0', sizeof(sid));
+					sprintf(sid, "%u", rid);
+					map_set(&weight_map, sid, USHRT_MAX);
+					map_set(&next_hop, sid, USHRT_MAX);
+					
 				}
 			}
 				
@@ -173,6 +180,7 @@ printf("timeout: %u, %u\n", timeout.tv_sec, timeout.tv_usec);
 			printf("-------------------------------\n");
 			printf("data received on router socket: %s\n", data);
 			process_dv(data);
+			bellman_ford();
 			//printf("before receiving update: \n");
 			//printq();
 		/*	

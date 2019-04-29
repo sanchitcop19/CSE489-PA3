@@ -82,3 +82,4 @@ void print_dv();
 void print_map(uint_map_t);
 #endif
 void process_dv();
+void bellman_ford();

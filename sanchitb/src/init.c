@@ -77,6 +77,7 @@ void build_adj_list(){
 
 /*converts the data structure formed form convert_payload (list of info) to adjacency list*/
 	char buf[2];
+	memset(buf, '\0', sizeof(buf));
 
 	map_init(&weight_map);
 	map_init(&ip_map);	

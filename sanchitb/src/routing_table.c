@@ -35,7 +35,7 @@ void routing_table(int sock_index){
 		uint16_t  _key = strtol(key, NULL, 10);
 		_key = htons(_key);
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET, &_key, sizeof(_key));
-		
+			
 		//nexthop
 		uint16_t _nexthop = *map_get(&next_hop, key);
 		_nexthop = htons(_nexthop);

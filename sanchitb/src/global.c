@@ -92,6 +92,48 @@ void print_dv(){
 		printf("\n");
 	} 
 }
+
+router* get_router(uint32_t ip){
+	for (int z = 0; z < _numr; ++z){
+		if (routers[z]->ip == ip)return routers[z];
+	}	
+	return NULL;
+}
+const char* get_id_from_index(int col){
+	const char *key;
+	map_iter_t iter = map_iter(&index_map);
+	while (key = map_next(&index_map, &iter)){
+		if (*map_get(&index_map, key) == col)return key;
+	}
+}
+void bellman_ford(){
+	for(int n = 0; n < _numneighbors; ++n){
+		unsigned long nid = neighbors[n];
+		char snid[50];
+		memset(snid, '\0', sizeof (snid));
+		sprintf(snid, "%u", nid);
+		unsigned long index = *map_get(&index_map, snid);
+		uint16_t self_to_other_cost;
+		uint16_t other_cost;
+		uint32_t other_ip;
+		uint16_t total;
+		for (int col = 0; col < _numr; ++col){
+			self_to_other_cost = *map_get(&weight_map, snid);
+			other_cost = dv[index][col];
+			if (other_cost == USHRT_MAX || self_to_other_cost == USHRT_MAX)total = USHRT_MAX;
+			else total = other_cost + self_to_other_cost;
+			if (dv[_row][col] > total){
+				dv[_row][col] = other_cost + self_to_other_cost;
+				other_ip = *map_get(&ip_map, snid);
+				const char* updateid = get_id_from_index(col);
+				//router* rout = get_router(other_ip);
+				//rout->
+				map_set(&next_hop, updateid, nid);
+			}
+		}
+	}	
+}
+
 void process_dv(char* data){
 	char* numupdates = strcat(char2bits(data[0]), char2bits(data[1]));	
 	uint16_t num_updates = strtol(numupdates, NULL, 2);
@@ -140,13 +182,16 @@ void process_dv(char* data){
 		uid = strtol(id, NULL, 2);
 	//	uid = ntohs(uid);
 		char idasstring[50];
+		memset(idasstring, '\0', sizeof(idasstring));
 		sprintf(idasstring, "%u", uid);
 		unsigned int tempcol = *map_get(&index_map, idasstring);	
 			
 		cost = strcat(char2bits(data[index+10]), char2bits(data[index+11]));
 		ucost = strtol(cost, NULL, 2);
 	//	ucost = ntohs(ucost);
+		printf("updating dv[%u][%u] to %u\n", temprow, tempcol, ucost);
 		dv[temprow][tempcol] = ucost;		
+
 	}	
 	
 }

@@ -84,6 +84,8 @@ void send_updates(){
 	char* packet = make_packet();
 	char id_s[50];
 	char ip_s[16];
+	memset(id_s, '\0', sizeof(id_s));
+	memset(ip_s, '\0', sizeof(ip_s));
 	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	struct sockaddr_in to;
 	printf("filling in the address\n");
@@ -93,6 +95,9 @@ void send_updates(){
 		memset(id_s, '\0', sizeof(id_s));
 		unsigned long _id = neighbors[z];
 		if (_id == self_id)continue;
+		for (int n = 0; n < _numr; ++n){
+			if (routers[n]->strike == 3)continue;	
+		}
 		printf("printing id to array\n");
 		const char *key;
 	        map_iter_t iter = map_iter(&ip_map);
@@ -100,7 +105,7 @@ void send_updates(){
         	while ((key = map_next(&ip_map, &iter))) {
                 	printf("%s -> %d\n", key, *map_get(&ip_map, key));
         	}
-
+		
 		sprintf(id_s, "%u", _id);	
 		uint32_t ipaddr = *map_get(&ip_map, id_s);
 		uint16_t port = *(map_get(&port_router_map, id_s));
