@@ -26,19 +26,22 @@ void routing_table(int sock_index){
         cntrl_response_payload = (char *) malloc(payload_len);
 	memset(cntrl_response_payload, '\0', payload_len);
 	// Add the id's		
-	
+	printf("ROUTINGTABLE\nROUTINGTABLE\nROUTINGTABLE\nBEGIN\n");	
 	iter = map_iter(&index_map);
 	short b = 0; 
 	while ((key = map_next(&index_map, &iter))) {
 		uint16_t id = *map_get(&index_map, key);
   		printf("%s -> %u\n", key, id);
 		uint16_t  _key = strtol(key, NULL, 10);
+		printf("key (before htons): %u\n", _key);	
 		_key = htons(_key);
+		printf("key (after htons): %u\n", _key);	
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET, &_key, sizeof(_key));
 			
 		//nexthop
 		uint16_t _nexthop = *map_get(&next_hop, key);
 		_nexthop = htons(_nexthop);
+		printf("next hop: %u\n", _nexthop);
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET + NEXT_HOP_OFFSET, &_nexthop, sizeof(_nexthop));
 
 		//cost
@@ -55,13 +58,14 @@ void routing_table(int sock_index){
 		unsigned long index = *map_get(&index_map, key);
 		uint16_t _cost = dv[_row][index];	
 		_cost = htons(_cost);
+		printf("cost: %u\n", _cost);
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET + COST_OFFSET, &_cost, sizeof(_cost));
 		b++;
 	}
 	iter = map_iter(&next_hop);
 
 	while ((key = map_next(&next_hop, &iter))) {
-  		printf("%s -> %u\n", key, *map_get(&next_hop, key));
+  		printf("next hop map: \n%s -> %u\n", key, *map_get(&next_hop, key));
 	}
         cntrl_response_header = create_response_header(sock_index, 2, 0, payload_len);
 
@@ -76,6 +80,7 @@ void routing_table(int sock_index){
 
         sendALL(sock_index, cntrl_response, response_len);
 
+	printf("ROUTINGTABLE\nROUTINGTABLE\nROUTINGTABLE\nEND\n");	
         free(cntrl_response);	
 	
 }

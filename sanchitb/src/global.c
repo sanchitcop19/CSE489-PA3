@@ -129,6 +129,7 @@ void bellman_ford(){
 				//router* rout = get_router(other_ip);
 				//rout->
 				map_set(&next_hop, updateid, nid);
+				map_set(&weight_map, updateid, total);
 			}
 		}
 	}	
@@ -137,7 +138,7 @@ void bellman_ford(){
 void process_dv(char* data){
 	char* numupdates = strcat(char2bits(data[0]), char2bits(data[1]));	
 	uint16_t num_updates = strtol(numupdates, NULL, 2);
-	//num_updates = ntohs(num_updates);
+	printf("num_updates: %u\n", num_updates);
 
 	char* interval = strcat(char2bits(data[2]), char2bits(data[3]));	
 	uint16_t uinterval = strtol(interval, NULL, 2);
@@ -190,7 +191,8 @@ void process_dv(char* data){
 		ucost = strtol(cost, NULL, 2);
 	//	ucost = ntohs(ucost);
 		printf("updating dv[%u][%u] to %u\n", temprow, tempcol, ucost);
-		dv[temprow][tempcol] = ucost;		
+		dv[temprow][tempcol] = ucost;
+		print_dv();						
 
 	}	
 	
