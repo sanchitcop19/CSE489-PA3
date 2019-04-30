@@ -42,7 +42,18 @@ void routing_table(int sock_index){
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET + NEXT_HOP_OFFSET, &_nexthop, sizeof(_nexthop));
 
 		//cost
-		uint16_t _cost = *map_get(&weight_map, key);
+		//cost is gonna be cost to get to next hop and from there onwards
+		//get next hop
+		//get cost to next hop
+		//get cost from dv?
+//		uint16_t _cost = *map_get(&weight_map, key);
+		char nhkey[50];
+		memset(nhkey, '\0', sizeof(nhkey));
+		//_COST IS the cost between the next hop and the current router
+		sprintf(nhkey, "%u", _nexthop);
+		//uint16_t _cost = *map_get(&weight_map, nhkey);
+		unsigned long index = *map_get(&index_map, key);
+		uint16_t _cost = dv[_row][index];	
 		_cost = htons(_cost);
 		memcpy(cntrl_response_payload + b*ROUTER_OFFSET + COST_OFFSET, &_cost, sizeof(_cost));
 		b++;

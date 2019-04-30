@@ -20,7 +20,11 @@ void update(int sock_index, char* payload){
 	map_set(&weight_map, buf, cost);
 	const char *key;
 	map_iter_t iter = map_iter(&weight_map);
-
+	
+	dv[_row][(*map_get(&index_map, buf))] = cost;
+	//TODO: is this right?
+	dv[(*map_get(&index_map, buf))][_row]= cost;
+	bellman_ford();	
 	while ((key = map_next(&weight_map, &iter))) {
   		printf("%s -> %d\n", key, *map_get(&weight_map, key));
 	}
